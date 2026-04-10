@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>코딩 테스트 문제 관리 웹 페이지</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link rel="stylesheet" href="style.css">
+        <style>
+            nav {
+                display: flex;
+            }
+            nav li {
+                padding: 20px;
+                list-style: none;
+                text-align: center;
+                cursor: pointer;
+            }
+            #n:hover {
+                background-color: #334477;
+                color: white;
+            }
+            #b:hover {
+                background-color: #AA6611;
+                color: white;
+            }
+            #d:hover {
+                background-color: darkslategrey;
+                color: white;
+            }
+            main {
+                background: linear-gradient(orange, red); 
+                text-align: center; 
+                /* padding-bottom: 600px; */
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+                grid-template-rows: repeat(3, 200px);          
+                padding: 15px;
+            }
+            #display {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr 5fr;
+                justify-content: space-between;
+            }
+            #p {
+                margin-left: -10px;
+            }
+            body.dark nav {
+                background-color: #222;
+                color: white;
+            }
+            body.dark input {
+                background-color: #444;
+                color: white;
+                border-left: black;
+                border-right: black;
+            }
+            body.dark button {
+                background-color: #333;
+                color: white;
+                border: none;
+            }
+            body.dark main {
+                background: linear-gradient(#333, black);
+                border-color: black;
+            }
+            body.dark #problem div {
+                border-color: black !important;
+                background-color: #555;
+            }
+            body.dark {
+                background: linear-gradient(#666, #999); 
+            }
+            body.dark #l {
+                color: white;
+            }
+            
+        </style>
+    </head>
+    <body>
+        <nav style="border-bottom: solid black 2px;">
+            <li style="font-family: 'Noto Sans KR'; border-right: solid black 2px;" id="b"><b>Coding Test Management</b></li>
+            <li id="n">Home</li>
+            <li id="n">List</li>
+            <div style="margin-left: auto;">
+                <li class="material-icons" style="border-right: solid black 2px; border-left: solid black 2px;" id="n">person</li>
+                <li onClick="toggleDark()" id="d" class="material-icons" style="border-left: solid black 2px; border: none; margin-left: -6px;">
+                    dark_mode
+                </li>
+            </div>
+        </nav>
+        <div id="display" style="padding-bottom: 10px 0; margin: 10px 0; border-bottom: solid gray 1px; padding-bottom: 15px;">
+            <div>
+                <label id="l">문제 이름: </label>
+                <input type="text" id="name">
+            </div>
+            <div>
+                <label id="l">문제 링크: </label>
+                <input type="url" id="url">
+            </div>
+            <div>
+                <label id="l">진행도: </label><br>
+                <input type="number" id="percent">
+            </div>
+            <button onClick="addProblem()" style="width: 100px; height: 30px; margin-top: 23px;">추가</button>
+        </div>
+        <div style="display: flex; justify-content: center; align-items: center; height: 90px; padding-top: 30px;">
+            <input type="text" id="search" placeholder="문제 제목을 입력하세요">
+            <button onClick="searchProblem()" class="material-icons">search</button>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 3px; padding: 0 10px 4px 15px; padding-top: 10px;"> 
+            <button onClick="filterProblem('all')" id="all">All</button>
+            <button onClick="filterProblem('none')" id="none">Not Started</button>
+            <button onClick="filterProblem('doing')" id="doing">Doing</button>
+            <button onClick="filterProblem('done')" id="done">Done</button>
+        </div>
+        <main id="problem" style="border-top: solid black 1px; border-bottom: solid black 1px;">
+        </main>
+        <div style="display: flex; justify-content: center; align-items: center; height: 100px;">
+            <input type="text" id="search" placeholder="문제 이름을 입력하세요">
+            <button onClick="searchProblem()" class="material-icons">search</button>
+        </div>
+        <footer></footer>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="app.js"></script>
+        <script>
+            let loaded = JSON.parse(localStorage.getItem("problem") || "[]");
+            let currentFilter = 'all';
+            function addProblem() {
+                var name = document.getElementById("name");
+                var url = document.getElementById("url");
+                var percent = document.getElementById("percent");
+                if (!name.value) {
+                    alert("이름을 입력하세요");
+
+                    return;
+                }
+                if (!url.value) {
+                    alert("주소를 입력하세요");
+
+                    return;
+                }
+                if (!percent.value) {
+                    alert("진행도를 입력하세요");
+
+                    return;
+                }
+                var problem = {
+                    id: Date.now(),
+                    name: name.value,
+                    url: url.value,
+                    percent : percent.value
+                };
+                loaded.push(problem);
+                localStorage.setItem("problem", JSON.stringify(loaded));
+                document.getElementById("name").value = '';
+                document.getElementById("url").value = '';
+                document.getElementById("percent").value = '';
+                load();
+            }
+            function deleteProblem(id) {
+                loaded = loaded.filter(p => p.id != id);
+                localStorage.setItem("problem", JSON.stringify(loaded));
+                load();
+            }
+            function searchProblem() {
+                const keyword = document.getElementById("search").value.toLowerCase();
+                const filtered = loaded.filter(p => {
+                    return p.name.toLowerCase().includes(keyword)
+                });
+                show(filtered);
+            }
+            function show(data) {
+                let problem = document.getElementById("problem");
+                problem.innerHTML = data.map(p => {
+                    let percentage = Number(p.percent);
+                    let border;
+                    if (percentage == 0) {
+                        border = '#757575';
+                    } else if (percentage < 100) {
+                        border = '#ff6f00';
+                    } else {
+                        border = '#15d461';
+                    }
+
+                    return `
+                        <div id="p" style="color: white; font-family: Noto Sans KR; 
+                            border: 2px solid; border-radius: 10px; 
+                            border-color: ${border}; width: 210px;
+                            height: 110px; padding: 20px;
+                        ">
+                            problem name: ${p.name}<br>
+                            link: <a href="${p.url}">${p.url}</a><br>
+                            percentage: ${p.percent}%
+                            <div style="margin-top: 10px;">
+                                <button onClick="deleteProblem(${p.id})" style="margin-bottom: -10px;">
+                                    <div class="material-icons" id="delete">delete</div>    
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            function load() {
+                /* let problem = document.getElementById("problem");
+                if (loaded.length == 0) {
+                    problem.innerHTML = '';
+
+                    return;
+                }
+                filterProblem(currentFilter);
+                problem.innerHTML = loaded.map(p => `
+                    <div style="color: white; font-family: Noto Sans KR; 
+                        border: 2px solid; border-radius: 10px; 
+                        border-color: red; width: 210px;
+                        height: 110px; 
+                    ">
+                        problem name: ${p.name}<br>
+                        link: <a href="${p.url}">${p.url}</a><br>
+                        percentage: ${p.percent}%
+                        <div style="margin-top: 10px;">
+                            <button onClick="deleteProblem(${p.id})" style="margin-bottom: -10px;">
+                                <div class="material-icons" id="delete">delete</div>    
+                            </button>
+                        </div>
+                    </div>
+                `).join(''); */
+                filterProblem(currentFilter);
+            }
+            function toggleDark() {
+                document.body.classList.toggle("dark");
+                if (document.body.classList.contains("dark")) {
+                    localStorage.setItem("theme", "dark");
+                } else {
+                    localStorage.setItem("theme", "light");
+                }
+            }
+            load();
+            if (localStorage.getItem("theme") == "dark") {
+                document.body.classList.add("dark");
+            }
+            function filterProblem(type) {
+                currentFilter = type;
+                const btn = ['all', 'none', 'doing', 'done'];
+                btn.forEach(b => {
+                    var btn = document.getElementById(b);
+                    if (b == type) {
+                        btn.style.fontWeight = 'bold';
+                    } else {
+                        btn.style.fontWeight = 'normal';
+                    }
+                });
+                let filtered;
+                if (type == 'all') {
+                    filtered = loaded;
+                } else if (type == 'none') {
+                    filtered = loaded.filter(p => Number(p.percent) == 0);
+                } else if (type == 'doing') {
+                    filtered = loaded.filter(p => Number(p.percent) > 0 && Number(p.percent) < 100);
+                } else if (type == 'done') {
+                    filtered = loaded.filter(p => Number(p.percent) == 100);
+                }
+                show(filtered);
+            }
+        </script>
+    </body>
+</html>
