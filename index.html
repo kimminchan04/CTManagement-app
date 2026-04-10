@@ -71,18 +71,37 @@
                 background-color: #555;
             }
             body.dark {
-                background: linear-gradient(#666, #999); 
+                background: linear-gradient(#EEE, white); 
             }
             body.dark #l {
                 color: white;
             }
-            
+            footer {
+                padding: 35px 40px 80px;
+                background-color: #2f2f2f;
+                color: #939393;
+                font-family: 'Noto Sans KR';
+                font-size: 13px;
+            }
+            #click {
+                color: #939393;
+            }
+            nav a {
+                color: black;
+            }
+            body.dark nav a {
+                color: white;
+            }
         </style>
     </head>
     <body>
         <nav style="border-bottom: solid black 2px;">
-            <li style="font-family: 'Noto Sans KR'; border-right: solid black 2px;" id="b"><b>Coding Test Management</b></li>
-            <li id="n">Home</li>
+            <a href="index.html" style="text-decoration: none;">
+                <li style="font-family: 'Noto Sans KR'; border-right: solid black 2px;" id="b"><b>Coding Test Management</b></li>
+            </a>
+            <a href="index.html" style="text-decoration: none;">
+                <li id="n">Home</li>
+            </a>
             <li id="n">List</li>
             <div style="margin-left: auto;">
                 <li class="material-icons" style="border-right: solid black 2px; border-left: solid black 2px;" id="n">person</li>
@@ -93,18 +112,18 @@
         </nav>
         <div id="display" style="padding-bottom: 10px 0; margin: 10px 0; border-bottom: solid gray 1px; padding-bottom: 15px;">
             <div>
-                <label id="l">문제 이름: </label>
+                <label id="l" style="color: black;">문제 이름: </label>
                 <input type="text" id="name">
             </div>
             <div>
-                <label id="l">문제 링크: </label>
+                <label id="l" style="color: black;">문제 링크: </label>
                 <input type="url" id="url">
             </div>
             <div>
-                <label id="l">진행도: </label><br>
+                <label id="l" style="color: black;">진행도: </label><br>
                 <input type="number" id="percent">
             </div>
-            <button onClick="addProblem()" style="width: 100px; height: 30px; margin-top: 23px;">추가</button>
+            <button onClick="submitForm()" id="submit" style="width: 100px; height: 30px; margin-top: 23px;">추가</button>
         </div>
         <div style="display: flex; justify-content: center; align-items: center; height: 90px; padding-top: 30px;">
             <input type="text" id="search" placeholder="문제 제목을 입력하세요">
@@ -118,17 +137,28 @@
         </div>
         <main id="problem" style="border-top: solid black 1px; border-bottom: solid black 1px;">
         </main>
-        <div style="display: flex; justify-content: center; align-items: center; height: 100px;">
-            <input type="text" id="search" placeholder="문제 이름을 입력하세요">
-            <button onClick="searchProblem()" class="material-icons">search</button>
-        </div>
-        <footer></footer>
+        <footer>
+            <p>
+                2026 All Rights Reserved <a href="#" id="click">주식 회사 로베르또</a> | <a href="#" id="click">서비스 약관</a> | 
+                <a href="#" id="click">개인 정보 보호</a> | <a href="#" id="click">도움말</a> | <a href="#" id="click">광고 문의</a> | 
+                <a href="#" id="click">업데이트 노트</a> | <a href="#" id="click">이슈</a>
+            </p>
+        </footer>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="app.js"></script>
         <script>
             let loaded = JSON.parse(localStorage.getItem("problem") || "[]");
             let currentFilter = 'all';
+            let isEditing = false;
+            let eid = null;
+            function submitForm() {
+                if (isEditing) {
+                    update(eid);
+                } else {
+                    addProblem();
+                }
+            }
             function addProblem() {
                 var name = document.getElementById("name");
                 var url = document.getElementById("url");
@@ -189,14 +219,17 @@
                     return `
                         <div id="p" style="color: white; font-family: Noto Sans KR; 
                             border: 2px solid; border-radius: 10px; 
-                            border-color: ${border}; width: 210px;
-                            height: 110px; padding: 20px;
+                            border-color: ${border}; width: 200px;
+                            padding: 20px; margin-bottom: 30px;
                         ">
                             problem name: ${p.name}<br>
                             link: <a href="${p.url}">${p.url}</a><br>
                             percentage: ${p.percent}%
-                            <div style="margin-top: 10px;">
-                                <button onClick="deleteProblem(${p.id})" style="margin-bottom: -10px;">
+                            <div style="margin-top: 10px; display: flex; justify-content: center; gap: 10px;">
+                                <button onClick="prepare(${p.id})">
+                                    <div class="material-icons">edit</div>
+                                </button>
+                                <button onClick="deleteProblem(${p.id})">
                                     <div class="material-icons" id="delete">delete</div>    
                                 </button>
                             </div>
@@ -205,29 +238,6 @@
                 }).join('');
             }
             function load() {
-                /* let problem = document.getElementById("problem");
-                if (loaded.length == 0) {
-                    problem.innerHTML = '';
-
-                    return;
-                }
-                filterProblem(currentFilter);
-                problem.innerHTML = loaded.map(p => `
-                    <div style="color: white; font-family: Noto Sans KR; 
-                        border: 2px solid; border-radius: 10px; 
-                        border-color: red; width: 210px;
-                        height: 110px; 
-                    ">
-                        problem name: ${p.name}<br>
-                        link: <a href="${p.url}">${p.url}</a><br>
-                        percentage: ${p.percent}%
-                        <div style="margin-top: 10px;">
-                            <button onClick="deleteProblem(${p.id})" style="margin-bottom: -10px;">
-                                <div class="material-icons" id="delete">delete</div>    
-                            </button>
-                        </div>
-                    </div>
-                `).join(''); */
                 filterProblem(currentFilter);
             }
             function toggleDark() {
@@ -264,6 +274,50 @@
                     filtered = loaded.filter(p => Number(p.percent) == 100);
                 }
                 show(filtered);
+            }
+            function prepare(id) {
+                let p = loaded.find(item => item.id == id);
+                if (!p) return;
+                document.getElementById("name").value = p.name;
+                document.getElementById("url").value = p.url;
+                document.getElementById("percent").value = p.percent;
+                let btn = document.getElementById("submit");
+                btn.innerText = "수정";
+                /* btn.onClick = () => update(id); */
+                isEditing = true;
+                eid = id;
+                /* window.scrollTo({top: 0, behavior: "smooth"}); */ 
+                window.scrollTo(0, 0);
+            }
+            function update(id) {
+                let name = document.getElementById("name").value;
+                let url = document.getElementById("url").value;
+                let percent = document.getElementById("percent").value;
+                if (!name || !url || !percent) {
+                    alert("수정할 내용을 입력하세요");
+
+                    return;
+                }
+                const index = loaded.findIndex(p => p.id == id);
+                if (index != -1) {
+                    loaded[index] = {
+                        id: id, name: name, url: url, percent: percent
+                    };
+                    localStorage.setItem("problem", JSON.stringify(loaded));
+                }
+                resetForm();
+                load();
+                alert(`"${name}" 문제의 내용을 수정했습니다`);
+            }
+            function resetForm() {
+                document.getElementById("name").value = '';
+                document.getElementById("url").value = '';
+                document.getElementById("percent").value = '';
+                let btn = document.getElementById("submit");
+                btn.innerText = "추가";
+                /* btn.onClick = addProblem; */
+                isEditing = false;
+                eid = null;
             }
         </script>
     </body>
